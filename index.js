@@ -26,7 +26,8 @@ module.exports = function(babel) {
     return new babel.Transformer("babel-gettext-plugin", {
         CallExpression(node, parent, scope, config) {
 
-            var functionNames = config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
+            var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
+                    && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
 
             if (functionNames.indexOf(node.callee.name) !== -1
                 || node.callee.property && functionNames.indexOf(node.callee.property.name) !== -1) {
