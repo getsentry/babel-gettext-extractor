@@ -44,7 +44,8 @@ module.exports = function(babel) {
                         };
                     }
 
-                    var fileName = config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
+                    var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
+                            && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
                     var output = gettextParser.po.compile(data);
                     fs.writeFileSync(fileName, output);
                 }
