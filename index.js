@@ -1,9 +1,10 @@
 "use strict";
 
-var functionName = "_t";
-
 var gettextParser = require("gettext-parser");
 var fs = require("fs");
+
+var DEFAULT_FUNCTION_NAMES = ["gettext", "dgettext", "ngettext", "dngettext", "pgettext", "dpgettext", "npgettext", "dnpgettext"];
+var DEFAULT_FILE_NAME = "gettext.po";
 
 var data = {
     charset: "UTF-8",
@@ -22,26 +23,29 @@ var data = {
 var context = data.translations.context;
 
 module.exports = function(babel) {
-    return new babel.Transformer("visitor", {
+    return new babel.Transformer("babel-gettext-plugin", {
         CallExpression(node, parent, scope, config) {
 
-            if (node.callee.name === functionName
-                || node.callee.property && node.callee.property.name === functionName) {
+            var functionNames = config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
+
+            if (functionNames.indexOf(node.callee.name) !== -1
+                || node.callee.property && functionNames.indexOf(node.callee.property.name) !== -1) {
 
                 var args = node.arguments;
 
                 for (var i = 0, l = args.length; i < l; i++) {
                     var arg = args[i];
                     var value = arg.value;
-                    console.log(value);
 
                     if (value) {
                         context[value] = {
                             msgid: value
                         };
                     }
+
+                    var fileName = config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
                     var output = gettextParser.po.compile(data);
-                    fs.writeFileSync("test.pot", output);
+                    fs.writeFileSync(fileName, output);
                 }
             }
         }
