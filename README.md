@@ -30,9 +30,9 @@ Options
 
 You can pass otions as extra in babel options :
 ```js
-extra {
+extra: {
     gettext: {
-        functionNames : <Array>,
+        functionNames: <Array>,
         fileName: <String>
     }
 }
