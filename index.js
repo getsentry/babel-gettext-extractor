@@ -6,23 +6,23 @@ var fs = require("fs");
 var DEFAULT_FUNCTION_NAMES = ["gettext", "dgettext", "ngettext", "dngettext", "pgettext", "dpgettext", "npgettext", "dnpgettext"];
 var DEFAULT_FILE_NAME = "gettext.po";
 
-var data = {
-    charset: "UTF-8",
-
-    headers: {
-        "content-type": "text/plain; charset=UTF-8",
-        "plural-forms": "nplurals=2; plural=(n!=1);"
-    },
-
-    translations: {
-        context: {
-        }
-    }
-};
-
-var context = data.translations.context;
-
 module.exports = function(babel) {
+    var data = {
+        charset: "UTF-8",
+
+        headers: {
+            "content-type": "text/plain; charset=UTF-8",
+            "plural-forms": "nplurals=2; plural=(n!=1);"
+        },
+
+        translations: {
+            context: {
+            }
+        }
+    };
+
+    var context = data.translations.context;
+
     return new babel.Transformer("babel-gettext-plugin", {
         CallExpression(node, parent, scope, config) {
 
