@@ -7,27 +7,38 @@ var DEFAULT_FUNCTION_NAMES = ["gettext", "dgettext", "ngettext", "dngettext", "p
 var DEFAULT_FILE_NAME = "gettext.po";
 
 module.exports = function(babel) {
-    var data = {
-        charset: "UTF-8",
 
-        headers: {
-            "content-type": "text/plain; charset=UTF-8",
-            "plural-forms": "nplurals=2; plural=(n!=1);"
-        },
-
-        translations: {
-            context: {
-            }
-        }
-    };
-
-    var context = data.translations.context;
+    var currentFileName;
+    var data;
 
     return new babel.Transformer("babel-gettext-plugin", {
         CallExpression(node, parent, scope, config) {
 
             var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
                     && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
+
+            var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
+                    && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
+
+            if (fileName !== currentFileName) {
+                currentFileName = fileName;
+
+                data = {
+                    charset: "UTF-8",
+
+                    headers: {
+                        "content-type": "text/plain; charset=UTF-8",
+                        "plural-forms": "nplurals=2; plural=(n!=1);"
+                    },
+
+                    translations: {
+                        context: {
+                        }
+                    }
+                };
+            }
+
+            var context = data.translations.context;
 
             if (functionNames.indexOf(node.callee.name) !== -1
                 || node.callee.property && functionNames.indexOf(node.callee.property.name) !== -1) {
@@ -44,8 +55,6 @@ module.exports = function(babel) {
                         };
                     }
 
-                    var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
-                            && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
                     var output = gettextParser.po.compile(data);
                     fs.writeFileSync(fileName, output);
                 }
