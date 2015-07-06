@@ -1,10 +1,23 @@
 "use strict";
 
 var gettextParser = require("gettext-parser");
+var path = require("path");
 var fs = require("fs");
 
 var DEFAULT_FUNCTION_NAMES = ["gettext", "dgettext", "ngettext", "dngettext", "pgettext", "dpgettext", "npgettext", "dnpgettext"];
 var DEFAULT_FILE_NAME = "gettext.po";
+var DEFAULT_LOCALE = "en_GB";
+
+var getLocalizedPath = function(filePath, lang) {
+    var rst = filePath;
+
+    if (lang) {
+        var ext = path.extname(filePath);
+        rst = filePath.replace(ext, "-" + lang + ext);
+    }
+
+    return rst;
+};
 
 module.exports = function(babel) {
 
@@ -19,6 +32,9 @@ module.exports = function(babel) {
 
             var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
                     && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
+
+            var locales = config.opts && config.opts.extra && config.opts.extra.gettext
+                    && config.opts.extra.gettext.locales || [DEFAULT_LOCALE];
 
             if (fileName !== currentFileName) {
                 currentFileName = fileName;
@@ -55,8 +71,15 @@ module.exports = function(babel) {
                         };
                     }
 
-                    var output = gettextParser.po.compile(data);
-                    fs.writeFileSync(fileName, output);
+                    // Writing a file for each locale
+
+                    for (var locale of locales) {
+                        data.headers.language = locale + ";";
+
+                        var output = gettextParser.po.compile(data);
+
+                        fs.writeFileSync(getLocalizedPath(fileName, locale), output);
+                    }
                 }
             }
         }
