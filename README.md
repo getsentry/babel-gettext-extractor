@@ -32,9 +32,21 @@ You can pass otions as extra in babel options :
 ```js
 extra: {
     gettext: {
+        headers: <Object>,
         functionNames: <Object>,
         fileName: <String>
     }
+}
+```
+
+
+### headers ###
+The headers to put in the po file.
+
+```js
+headers: {
+    "content-type": "text/plain; charset=UTF-8",
+    "plural-forms": "nplurals=2; plural=(n!=1);"
 }
 ```
 
