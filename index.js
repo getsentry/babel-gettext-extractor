@@ -56,7 +56,7 @@ module.exports = function(babel) {
                 headers["content-type"] = headers["content-type"] || DEFAULT_HEADERS["content-type"];
             }
             var defaultContext = data.translations.context;
-            var nplurals = /nplurals=(\d)/.exec(headers["plural-forms"])[1];
+            var nplurals = /nplurals ?= ?(\d)/.exec(headers["plural-forms"])[1];
 
             if (functionNames.hasOwnProperty(node.callee.name)
                     || node.callee.property && functionNames.hasOwnProperty(node.callee.property.name)) {
