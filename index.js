@@ -18,7 +18,7 @@ var DEFAULT_FILE_NAME = "gettext.po";
 
 var DEFAULT_HEADERS = {
     "content-type": "text/plain; charset=UTF-8",
-    "plural-forms": "nplurals=2; plural=(n!=1);"
+    "plural-forms": "nplurals = 2; plural = (n != 1);"
 };
 
 module.exports = function(babel) {
