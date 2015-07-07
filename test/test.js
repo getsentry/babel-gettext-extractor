@@ -14,7 +14,9 @@ describe("babel-gettext-plugin", function() {
                 plugins: ["../index.js"],
                 extra: {
                     gettext: {
-                        functionNames: ["_t"],
+                        functionNames: {
+                           _t: ["msgid"]
+                        },
                         fileName: "test.po"
                     }
                 }
@@ -37,6 +39,21 @@ describe("babel-gettext-plugin", function() {
 
             assert(!!result);
             assert(!fs.existsSync("test2.po"));
+        });
+
+        it("Should return a result", function() {
+            var result = babel.transform("dnpgettext('mydomain', 'mycontext', 'msg', 'plurial', 10)", {
+                plugins: ["../index.js"],
+                extra: {
+                    gettext: {
+                        fileName: "test.po"
+                    }
+                }
+            });
+            assert(!!result);
+
+            var content = fs.readFileSync("test.po");
+            assert(!!content);
         });
 
     });

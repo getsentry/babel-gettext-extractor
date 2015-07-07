@@ -32,14 +32,22 @@ You can pass otions as extra in babel options :
 ```js
 extra: {
     gettext: {
-        functionNames: <Array>,
+        functionNames: <Object>,
         fileName: <String>
     }
 }
 ```
 
 ### functionNames ###
-All function names to be extract.
+All function names to be extract. You have to precise where found the parameters
+("domain", "msgctxt", "msgid", "msgid_plural" and "count") to be extract.
+
+example:
+```js
+functionNames: {
+        myfunction: ["msgid"]
+    }
+```
 
 ### fileName ###
 The file name where found all extracted strings.
