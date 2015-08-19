@@ -24,7 +24,7 @@ var DEFAULT_HEADERS = {
 var currentFileName;
 var data;
 
-module.exports = function(){
+module.exports = function() {
 
     module.reset = function() {
         currentFileName = data = null;
@@ -45,6 +45,7 @@ module.exports = function(){
                 && config.opts.extra.gettext.headers || DEFAULT_HEADERS;
 
                 if (fileName !== currentFileName) {
+
                     currentFileName = fileName;
 
                     data = {
@@ -100,11 +101,19 @@ module.exports = function(){
 
                     context[translate.msgid] = translate;
 
-                    var output = gettextParser.po.compile(data);
-                    fs.writeFileSync(fileName, output);
+                    //var output = gettextParser.po.compile(data);
+                    //fs.writeFileSync(fileName, output);
                 }
             }
         });
+    };
+
+    module.dump = function() {
+
+        if (currentFileName && data) {
+            var output = gettextParser.po.compile(data);
+            fs.writeFileSync(currentFileName, output);
+        }
     };
 
     return module;
