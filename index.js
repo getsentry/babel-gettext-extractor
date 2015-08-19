@@ -21,82 +21,91 @@ var DEFAULT_HEADERS = {
     "plural-forms": "nplurals = 2; plural = (n !== 1);"
 };
 
-module.exports = function(babel) {
+var currentFileName;
+var data;
 
-    var currentFileName;
-    var data;
+module.exports = function(){
 
-    return new babel.Transformer("babel-gettext-plugin", {
-        CallExpression(node, parent, scope, config) {
+    module.reset = function() {
+        currentFileName = data = null;
+    };
 
-            var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
-                    && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
+    module.extract = function(babel) {
 
-            var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
-                    && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
+        return new babel.Transformer("babel-gettext-plugin", {
+            CallExpression(node, parent, scope, config) {
 
-            var headers = config.opts && config.opts.extra && config.opts.extra.gettext
-                    && config.opts.extra.gettext.headers || DEFAULT_HEADERS;
+                var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
+                && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
 
-            if (fileName !== currentFileName) {
-                currentFileName = fileName;
+                var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
+                && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
 
-                data = {
-                    charset: "UTF-8",
+                var headers = config.opts && config.opts.extra && config.opts.extra.gettext
+                && config.opts.extra.gettext.headers || DEFAULT_HEADERS;
 
-                    headers: headers,
+                if (fileName !== currentFileName) {
+                    currentFileName = fileName;
 
-                    translations: {
-                        context: {
+                    data = {
+                        charset: "UTF-8",
+
+                        headers: headers,
+
+                        translations: {
+                            context: {
+                            }
                         }
-                    }
-                };
+                    };
 
-                headers["plural-forms"] = headers["plural-forms"] || DEFAULT_HEADERS["plural-forms"];
-                headers["content-type"] = headers["content-type"] || DEFAULT_HEADERS["content-type"];
-            }
-            var defaultContext = data.translations.context;
-            var nplurals = /nplurals ?= ?(\d)/.exec(headers["plural-forms"])[1];
+                    headers["plural-forms"] = headers["plural-forms"] || DEFAULT_HEADERS["plural-forms"];
+                    headers["content-type"] = headers["content-type"] || DEFAULT_HEADERS["content-type"];
+                }
+                var defaultContext = data.translations.context;
+                var nplurals = /nplurals ?= ?(\d)/.exec(headers["plural-forms"])[1];
 
-            if (functionNames.hasOwnProperty(node.callee.name)
-                    || node.callee.property && functionNames.hasOwnProperty(node.callee.property.name)) {
+                if (functionNames.hasOwnProperty(node.callee.name)
+                || node.callee.property && functionNames.hasOwnProperty(node.callee.property.name)) {
 
-                var functionName = functionNames[node.callee.name] || functionNames[node.callee.property.name];
-                var translate = {};
+                    var functionName = functionNames[node.callee.name] || functionNames[node.callee.property.name];
+                    var translate = {};
 
-                var args = node.arguments;
-                for (var i = 0, l = args.length; i < l; i++) {
-                    var name = functionName[i];
+                    var args = node.arguments;
+                    for (var i = 0, l = args.length; i < l; i++) {
+                        var name = functionName[i];
 
-                    if (name && name !== "count" && name !== "domain") {
-                        var arg = args[i];
-                        var value = arg.value;
+                        if (name && name !== "count" && name !== "domain") {
+                            var arg = args[i];
+                            var value = arg.value;
 
-                        if (value) {
-                            translate[name] = value;
-                        }
+                            if (value) {
+                                translate[name] = value;
+                            }
 
-                        if (name === "msgid_plural") {
-                            translate.msgstr = [];
-                            for (var p = 0; p < nplurals; p++) {
-                                translate.msgstr[p] = "";
+                            if (name === "msgid_plural") {
+                                translate.msgstr = [];
+                                for (var p = 0; p < nplurals; p++) {
+                                    translate.msgstr[p] = "";
+                                }
                             }
                         }
                     }
+
+                    var context = defaultContext;
+                    var msgctxt = translate.msgctxt;
+                    if (msgctxt) {
+                        data.translations[msgctxt] = data.translations[msgctxt] || {};
+                        context = data.translations[msgctxt];
+                    }
+
+                    context[translate.msgid] = translate;
+
+                    var output = gettextParser.po.compile(data);
+                    fs.writeFileSync(fileName, output);
                 }
-
-                var context = defaultContext;
-                var msgctxt = translate.msgctxt;
-                if (msgctxt) {
-                    data.translations[msgctxt] = data.translations[msgctxt] || {};
-                    context = data.translations[msgctxt];
-                }
-
-                context[translate.msgid] = translate;
-
-                var output = gettextParser.po.compile(data);
-                fs.writeFileSync(fileName, output);
             }
-        }
-    });
+        });
+    };
+
+    return module;
 };
