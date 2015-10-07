@@ -100,6 +100,6 @@ exports.default = function(_ref) {
                     fs.writeFileSync(fileName, output);
                 }
             }
-        }}
-    );
+        }
+    });
 };
