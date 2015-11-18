@@ -86,6 +86,10 @@ exports.default = function(_ref) {
             }
           }
 
+          translate.comments = {
+            reference: state.file.log.filename + ':' + node.container.openingElement.loc.start.line
+          };
+
           var context = defaultContext;
           var msgctxt = translate.msgctxt;
           if (msgctxt) {
