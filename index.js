@@ -38,7 +38,7 @@ exports.default = function(_ref) {
       var base = config.opts && config.opts.extra && config.opts.extra.gettext
         && config.opts.extra.gettext.baseDirectory;
       if (base) {
-        base = base.match(/^(.*?)\/*/)[1] + '/';
+        base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
 
       if (fileName !== currentFileName) {
