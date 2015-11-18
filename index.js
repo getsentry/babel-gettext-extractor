@@ -29,7 +29,7 @@ exports.default = function(_ref) {
 
     return new Plugin("babel-plugin-example", {visitor: {
 
-            CallExpression(node, parent, scope, config) {
+            CallExpression: function(node, parent, scope, config) {
 
                 var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
                         && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
