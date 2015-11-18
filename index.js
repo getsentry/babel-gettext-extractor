@@ -35,6 +35,11 @@ exports.default = function(_ref) {
         && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
       var headers = config.opts && config.opts.extra && config.opts.extra.gettext
         && config.opts.extra.gettext.headers || DEFAULT_HEADERS;
+      var base = config.opts && config.opts.extra && config.opts.extra.gettext
+        && config.opts.extra.gettext.baseDirectory;
+      if (base) {
+        base = base.match(/^(.*?)\/*/)[1] + '/';
+      }
 
       if (fileName !== currentFileName) {
         currentFileName = fileName;
@@ -82,8 +87,13 @@ exports.default = function(_ref) {
           }
         }
 
+        var fn = config.log.filename;
+        if (base && fn && fn.substr(0, base.length) == base) {
+          fn = fn.substr(base.length);
+        }
+
         translate.comments = {
-          reference: config.log.filename + ':' + node.loc.start.line
+          reference: fn + ':' + node.loc.start.line
         };
 
         var context = defaultContext;
