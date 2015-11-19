@@ -42,7 +42,8 @@ describe('babel-gettext-plugin', function() {
     });
 
     it('Should return a result', function() {
-      var result = babel.transform('dnpgettext("mydomain", "mycontext", "msg", "plurial", 10)', {
+      var result = babel.transform('dnpgettext("mydomain", "mycontext", ' +
+                                   '"msg", "plurial", 10)', {
         plugins: ['../index.js'],
         extra: {
           gettext: {
