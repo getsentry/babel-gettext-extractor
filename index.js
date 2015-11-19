@@ -21,11 +21,39 @@ var DEFAULT_HEADERS = {
   'plural-forms': 'nplurals = 2; plural = (n !== 1);'
 };
 
+function getTranslatorComment(node) {
+  var comments = [];
+  (node.leadingComments || []).forEach(function(commentNode) {
+    var match = commentNode.value.match(/^\s*translators:\s*(.*?)\s*$/im);
+    if (match) {
+      comments.push(match[1]);
+    }
+  });
+  return comments.length > 0 ? comments.join('\n') : null;
+}
+
 exports.default = function(_ref) {
   var currentFileName;
   var data;
   var Plugin = _ref.Plugin;
+  var relocatedComments = {};
+
   return new Plugin('babel-plugin-example', {visitor: {
+
+    VariableDeclaration: function(node, parent, scope, config) {
+      var translatorComment = getTranslatorComment(node);
+      if (!translatorComment) {
+        return;
+      }
+      node.declarations.forEach(function(declarator) {
+        var comment = getTranslatorComment(declarator);
+        if (!comment) {
+          var key = declarator.init.start + '|' + declarator.init.end;
+          relocatedComments[key] = translatorComment;
+        }
+      });
+    },
+
     CallExpression: function(node, parent, scope, config) {
       var gtCfg = config.opts && config.opts.extra
         && config.opts.extra.gettext || {};
@@ -91,16 +119,14 @@ exports.default = function(_ref) {
           reference: fn + ':' + node.loc.start.line
         };
 
-        var translatorComments = [];
-        (parent.leadingComments || []).forEach(function(node) {
-          var match = node.value.match(/^\s*translators:\s*(.*?)\s*$/im);
-          if (match) {
-            translatorComments.push(match[1]);
-          }
-        });
+        var translatorComment = getTranslatorComment(parent);
+        if (!translatorComment) {
+          translatorComment = relocatedComments[
+            node.start + '|' + node.end];
+        }
 
-        if (translatorComments.length > 0) {
-          translate.comments.translator = translatorComments.join('\n');
+        if (translatorComment) {
+          translate.comments.translator = translatorComment;
         }
 
         var context = defaultContext;
