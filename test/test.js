@@ -57,5 +57,24 @@ describe('babel-gettext-plugin', function() {
       assert(!!content);
     });
 
+    it('Should have comments', function() {
+      var result = babel.transform('// Translators: whatever happens\n' +
+                                   'let t = _t("code");', {
+        plugins: ['../index.js'],
+        extra: {
+          gettext: {
+            functionNames: {
+              _t: ['msgid']
+            },
+            fileName: 'test3.po'
+          }
+        }
+      });
+      assert(!!result);
+
+      var content = fs.readFileSync('test3.po') + '';
+      assert(content.match(/whatever happens/));
+    });
+
   });
 });
