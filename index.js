@@ -1,87 +1,82 @@
-"use strict";
+'use strict';
 
-var gettextParser = require("gettext-parser");
-var fs = require("fs");
+var gettextParser = require('gettext-parser');
+var fs = require('fs');
 
 var DEFAULT_FUNCTION_NAMES = {
-  gettext: ["msgid"],
-  dgettext: ["domain", "msgid"],
-  ngettext: ["msgid", "msgid_plural", "count"],
-  dngettext: ["domain", "msgid", "msgid_plural", "count"],
-  pgettext: ["msgctxt", "msgid"],
-  dpgettext: ["domain", "msgctxt", "msgid"],
-  npgettext: ["msgctxt", "msgid", "msgid_plural", "count"],
-  dnpgettext: ["domain", "msgctxt", "msgid", "msgid_plural", "count"]
+  gettext: ['msgid'],
+  dgettext: ['domain', 'msgid'],
+  ngettext: ['msgid', 'msgid_plural', 'count'],
+  dngettext: ['domain', 'msgid', 'msgid_plural', 'count'],
+  pgettext: ['msgctxt', 'msgid'],
+  dpgettext: ['domain', 'msgctxt', 'msgid'],
+  npgettext: ['msgctxt', 'msgid', 'msgid_plural', 'count'],
+  dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'count']
 };
 
-var DEFAULT_FILE_NAME = "gettext.po";
+var DEFAULT_FILE_NAME = 'gettext.po';
 
 var DEFAULT_HEADERS = {
-  "content-type": "text/plain; charset=UTF-8",
-  "plural-forms": "nplurals = 2; plural = (n !== 1);"
+  'content-type': 'text/plain; charset=UTF-8',
+  'plural-forms': 'nplurals = 2; plural = (n !== 1);'
 };
 
 exports.default = function(_ref) {
   var currentFileName;
   var data;
   var Plugin = _ref.Plugin;
-  return new Plugin("babel-plugin-example", {visitor: {
+  return new Plugin('babel-plugin-example', {visitor: {
     CallExpression: function(node, parent, scope, config) {
-      //console.log({node: node, parent: parent, scope: scope, config: config});
-      //throw new Error();
-      var functionNames = config.opts && config.opts.extra && config.opts.extra.gettext
-        && config.opts.extra.gettext.functionNames || DEFAULT_FUNCTION_NAMES;
-      var fileName = config.opts && config.opts.extra && config.opts.extra.gettext
-        && config.opts.extra.gettext.fileName || DEFAULT_FILE_NAME;
-      var headers = config.opts && config.opts.extra && config.opts.extra.gettext
-        && config.opts.extra.gettext.headers || DEFAULT_HEADERS;
-      var base = config.opts && config.opts.extra && config.opts.extra.gettext
-        && config.opts.extra.gettext.baseDirectory;
+      var gtCfg = config.opts && config.opts.extra
+        && config.opts.extra.gettext || {};
+
+      var functionNames = gtCfg.functionNames || DEFAULT_FUNCTION_NAMES;
+      var fileName = gtCfg.fileName || DEFAULT_FILE_NAME;
+      var headers = gtCfg.headers || DEFAULT_HEADERS;
+      var base = gtCfg.baseDirectory;
       if (base) {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
 
       if (fileName !== currentFileName) {
         currentFileName = fileName;
-
         data = {
-          charset: "UTF-8",
+          charset: 'UTF-8',
           headers: headers,
-          translations: {
-            context: {
-            }
-          }
+          translations: {context: {}}
         };
 
-        headers["plural-forms"] = headers["plural-forms"] || DEFAULT_HEADERS["plural-forms"];
-        headers["content-type"] = headers["content-type"] || DEFAULT_HEADERS["content-type"];
+        headers['plural-forms'] = headers['plural-forms']
+          || DEFAULT_HEADERS['plural-forms'];
+        headers['content-type'] = headers['content-type']
+          || DEFAULT_HEADERS['content-type'];
       }
 
       var defaultContext = data.translations.context;
-      var nplurals = /nplurals ?= ?(\d)/.exec(headers["plural-forms"])[1];
+      var nplurals = /nplurals ?= ?(\d)/.exec(headers['plural-forms'])[1];
 
       if (functionNames.hasOwnProperty(node.callee.name)
           || node.callee.property &&
           functionNames.hasOwnProperty(node.callee.property.name)) {
-        var functionName = functionNames[node.callee.name] || functionNames[node.callee.property.name];
+        var functionName = functionNames[node.callee.name]
+          || functionNames[node.callee.property.name];
         var translate = {};
 
         var args = node.arguments;
         for (var i = 0, l = args.length; i < l; i++) {
           var name = functionName[i];
 
-          if (name && name !== "count" && name !== "domain") {
+          if (name && name !== 'count' && name !== 'domain') {
             var arg = args[i];
             var value = arg.value;
-
             if (value) {
               translate[name] = value;
             }
 
-            if (name === "msgid_plural") {
+            if (name === 'msgid_plural') {
               translate.msgstr = [];
               for (var p = 0; p < nplurals; p++) {
-                translate.msgstr[p] = "";
+                translate.msgstr[p] = '';
               }
             }
           }
@@ -95,6 +90,18 @@ exports.default = function(_ref) {
         translate.comments = {
           reference: fn + ':' + node.loc.start.line
         };
+
+        var translatorComments = [];
+        (parent.leadingComments || []).forEach(function(node) {
+          var match = node.value.match(/^\s*translators:\s*(.*?)\s*$/im);
+          if (match) {
+            translatorComments.push(match[1]);
+          }
+        });
+
+        if (translatorComments.length > 0) {
+          translate.comments.translator = translatorComments.join('\n');
+        }
 
         var context = defaultContext;
         var msgctxt = translate.msgctxt;
