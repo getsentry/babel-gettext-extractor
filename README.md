@@ -1,4 +1,4 @@
-# babel-gettext-plugin
+# babel-gettext-extractor
 
 Extract gettext string with babel support syntax JSX, ES6, ... It is based on
 node-gettext.  This is a fork of the npm module `babel-gettext-plugin` which
@@ -10,14 +10,14 @@ Node use
 ```js
 var babel = require("babel");
 
-babel.transform(code, { plugins:["babel-gettext-plugin"]});
+babel.transform(code, { plugins:["babel-gettext-extractor"]});
 ```
 
 Command line use
 ================
 
 ```
-babel --plugins babel-gettext-plugin code.js
+babel --plugins babel-gettext-extractor code.js
 ```
 
 Options
@@ -29,7 +29,8 @@ extra: {
   gettext: {
     headers: <Object>,
     functionNames: <Object>,
-    fileName: <String>
+    fileName: <String>,
+    baseDirectory: <String>
   }
 }
 ```
@@ -56,6 +57,15 @@ functionNames: {
   myfunction: ["msgid"]
 }
 ```
+
+### fileName ###
+
+The filename where the end result is placed.
+
+### baseDirectory ###
+
+If provided, then file names are chopped off in relation to this base path
+if filenames start with that path.
 
 License
 =======
