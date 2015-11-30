@@ -119,10 +119,13 @@ exports.default = function(_ref) {
           reference: fn + ':' + node.loc.start.line
         };
 
-        var translatorComment = getTranslatorComment(parent);
+        var translatorComment = getTranslatorComment(node);
         if (!translatorComment) {
-          translatorComment = relocatedComments[
-            node.start + '|' + node.end];
+          translatorComment = getTranslatorComment(parent);
+          if (!translatorComment) {
+            translatorComment = relocatedComments[
+              node.start + '|' + node.end];
+          }
         }
 
         if (translatorComment) {
