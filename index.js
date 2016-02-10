@@ -4,6 +4,7 @@ console.log("LOADING gettext PLUGIN");
 
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
+var process = require('process');
 
 var DEFAULT_FUNCTION_NAMES = {
   gettext: ['msgid'],
@@ -65,7 +66,11 @@ function plugin(babel) {
         var headers = gtCfg.headers || DEFAULT_HEADERS;
         var base = gtCfg.baseDirectory;
         if (base) {
-          base = base.match(/^(.*?)\/*$/)[1] + '/';
+          if (base === '.') {
+            base = process.cwd() + '/';
+          } else {
+            base = base.match(/^(.*?)\/*$/)[1] + '/';
+          }
         }
 
         if (fileName !== currentFileName) {
