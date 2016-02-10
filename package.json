@@ -23,11 +23,11 @@
   },
   "homepage": "https://github.com/getsentry/babel-gettext-extractor",
   "dependencies": {
-    "babel-core": "^5.8.23",
-    "gettext-parser": "^1.1.1"
+    "babel-runtime": "^5.0.0",
+    "gettext-parser": "^1.1.2"
   },
   "devDependencies": {
-    "babel": "^5.8.23",
+    "babel-cli": "^6.5.1",
     "mocha": "^2.3.4"
   }
 }
