@@ -1,7 +1,5 @@
 'use strict';
 
-console.log("LOADING gettext PLUGIN");
-
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
 var process = require('process');
