@@ -22,6 +22,29 @@ var DEFAULT_HEADERS = {
   'plural-forms': 'nplurals = 2; plural = (n !== 1);'
 };
 
+/*
+ * Sorts the object keys by the file reference.
+ * There's no guarantee of key iteration in order prior to es6
+ * but in practice it tends to work out.
+ */
+function sortObjectKeysByRef(unordered) {
+  const ordered = {};
+  Object.keys(unordered).sort((a,b) => {
+    const refA = unordered[a].comments.reference.toLowerCase();
+    const refB = unordered[b].comments.reference.toLowerCase();
+    if (refA < refB) {
+      return -1;
+    }
+    if (refA > refB) {
+      return 1;
+    }
+    return 0;
+  }).forEach(function(key) {
+    ordered[key] = unordered[key];
+  });
+  return ordered;
+}
+
 function getTranslatorComment(node) {
   var comments = [];
   (node.leadingComments || []).forEach(function(commentNode) {
@@ -145,8 +168,13 @@ function plugin(babel) {
           }
 
           // Do not add translation if msgid is undefined.
-          if (typeof translate.msgid !== "undefined") {
+          if (typeof translate.msgid !== 'undefined') {
             context[translate.msgid] = translate;
+          }
+
+          // Sort by file reference to make output idempotent for the same input.
+          if (data.translations && data.translations.context) {
+            data.translations.context = sortObjectKeysByRef(data.translations.context);
           }
 
           var output = gettextParser.po.compile(data);
