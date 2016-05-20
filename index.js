@@ -144,7 +144,10 @@ function plugin(babel) {
             context = data.translations[msgctxt];
           }
 
-          context[translate.msgid] = translate;
+          // Do not add translation if msgid is undefined.
+          if (typeof translate.msgid !== "undefined") {
+            context[translate.msgid] = translate;
+          }
 
           var output = gettextParser.po.compile(data);
           fs.writeFileSync(fileName, output);
