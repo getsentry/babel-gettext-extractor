@@ -23,7 +23,8 @@ babel --plugins babel-gettext-extractor code.js
 Options
 =======
 
-You can pass otions as extra in babel options :
+You can pass options to the plugin. For Babel 5, use the `extra` option:
+
 ```js
 extra: {
   gettext: {
@@ -33,6 +34,19 @@ extra: {
     baseDirectory: <String>
   }
 }
+```
+
+For Babel 6, use the [plugin options](http://babeljs.io/docs/plugins/#plugin-options) feature:
+
+```js
+"plugins": [
+  [ "babel-gettext-extractor", {
+    "headers": <Object>,
+    "functionNames": <Object>,
+    "fileName": <String>,
+    "baseDirectory": <String>
+  }]
+]
 ```
 
 ### headers ###
