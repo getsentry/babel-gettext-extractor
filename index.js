@@ -167,8 +167,18 @@ function plugin(babel) {
             context = data.translations[msgctxt];
           }
 
-          // Do not add translation if msgid is undefined.
-          if (typeof translate.msgid !== 'undefined') {
+          if (typeof context[translate.msgid] !== 'undefined') {
+            // If we already have this translation append the new file reference
+            // so we know about all the places it is used.
+            var newRef = translate.comments.reference;
+            var currentRef = context[translate.msgid].comments.reference;
+            var refs = currentRef.split('\n');
+            if (refs.indexOf(newRef) === -1) {
+              refs.push(newRef);
+              context[translate.msgid].comments.reference = refs.sort().join('\n');
+            }
+          } else if (typeof translate.msgid !== 'undefined') {
+            // Do not add translation if msgid is undefined.
             context[translate.msgid] = translate;
           }
 
