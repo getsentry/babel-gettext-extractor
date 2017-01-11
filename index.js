@@ -32,20 +32,19 @@ function getTranslatorComment(node) {
   return comments.length > 0 ? comments.join('\n') : null;
 }
 
-exports.default = function(_ref) {
+exports.default = function() {
   var currentFileName;
   var data;
-  var Plugin = _ref.Plugin;
   var relocatedComments = {};
 
-  return new Plugin('babel-plugin-example', {visitor: {
+  return {visitor: {
 
-    VariableDeclaration: function(node, parent, scope, config) {
-      var translatorComment = getTranslatorComment(node);
+    VariableDeclaration: function(nodePath, plugin) {
+      var translatorComment = getTranslatorComment(nodePath.node);
       if (!translatorComment) {
         return;
       }
-      node.declarations.forEach(function(declarator) {
+      nodePath.node.declarations.forEach(function(declarator) {
         var comment = getTranslatorComment(declarator);
         if (!comment) {
           var key = declarator.init.start + '|' + declarator.init.end;
@@ -54,14 +53,11 @@ exports.default = function(_ref) {
       });
     },
 
-    CallExpression: function(node, parent, scope, config) {
-      var gtCfg = config.opts && config.opts.extra
-        && config.opts.extra.gettext || {};
-
-      var functionNames = gtCfg.functionNames || DEFAULT_FUNCTION_NAMES;
-      var fileName = gtCfg.fileName || DEFAULT_FILE_NAME;
-      var headers = gtCfg.headers || DEFAULT_HEADERS;
-      var base = gtCfg.baseDirectory;
+    CallExpression: function(nodePath, plugin) {
+      var functionNames = plugin.opts && plugin.opts.functionNames || DEFAULT_FUNCTION_NAMES;
+      var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
+      var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
+      var base = plugin.opts && plugin.opts.baseDirectory;
       if (base) {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
@@ -83,14 +79,16 @@ exports.default = function(_ref) {
       var defaultContext = data.translations.context;
       var nplurals = /nplurals ?= ?(\d)/.exec(headers['plural-forms'])[1];
 
-      if (functionNames.hasOwnProperty(node.callee.name)
-          || node.callee.property &&
-          functionNames.hasOwnProperty(node.callee.property.name)) {
-        var functionName = functionNames[node.callee.name]
-          || functionNames[node.callee.property.name];
+      let callee = nodePath.node.callee;
+
+      if (functionNames.hasOwnProperty(callee.name)
+          || callee.property &&
+          functionNames.hasOwnProperty(callee.property.name)) {
+        var functionName = functionNames[callee.name]
+          || functionNames[callee.property.name];
         var translate = {};
 
-        var args = node.arguments;
+        var args = nodePath.node.arguments;
         for (var i = 0, l = args.length; i < l; i++) {
           var name = functionName[i];
 
@@ -110,21 +108,21 @@ exports.default = function(_ref) {
           }
         }
 
-        var fn = config.log.filename;
+        var fn = this.file.opts.filename;
         if (base && fn && fn.substr(0, base.length) == base) {
           fn = fn.substr(base.length);
         }
 
         translate.comments = {
-          reference: fn + ':' + node.loc.start.line
+          reference: fn + ':' + nodePath.node.loc.start.line
         };
 
-        var translatorComment = getTranslatorComment(node);
+        var translatorComment = getTranslatorComment(nodePath.node);
         if (!translatorComment) {
-          translatorComment = getTranslatorComment(parent);
+          translatorComment = getTranslatorComment(nodePath.parent);
           if (!translatorComment) {
             translatorComment = relocatedComments[
-              node.start + '|' + node.end];
+              nodePath.node.start + '|' + nodePath.node.end];
           }
         }
 
@@ -145,5 +143,5 @@ exports.default = function(_ref) {
         fs.writeFileSync(fileName, output);
       }
     }
-  }});
+  }};
 };
