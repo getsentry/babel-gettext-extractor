@@ -39,7 +39,7 @@ exports.default = function() {
 
   return {visitor: {
 
-    VariableDeclaration: function(nodePath, plugin) { // parent, scope, config
+    VariableDeclaration: function(nodePath, plugin) {
       var translatorComment = getTranslatorComment(nodePath.node);
       if (!translatorComment) {
         return;
@@ -53,7 +53,7 @@ exports.default = function() {
       });
     },
 
-    CallExpression: function(nodePath, plugin) {//parent, scope, config) {
+    CallExpression: function(nodePath, plugin) {
       var functionNames = plugin.opts && plugin.opts.functionNames || DEFAULT_FUNCTION_NAMES;
       var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
       var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
@@ -108,7 +108,7 @@ exports.default = function() {
           }
         }
 
-        var fn = this.file.opts.filename;//config.log.filename;
+        var fn = this.file.opts.filename;
         if (base && fn && fn.substr(0, base.length) == base) {
           fn = fn.substr(base.length);
         }
