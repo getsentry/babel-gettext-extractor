@@ -1,5 +1,3 @@
-'use strict';
-
 var assert = require('assert');
 var babel = require('babel-core');
 
@@ -8,71 +6,120 @@ var plugin = require('../index.js').default;
 
 
 describe('babel-gettext-plugin', function() {
-
   describe('#extract()', function() {
-
-    it('Should return a result', function() {
+    it('Should return a result for simple code example', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [
           [plugin, {
             functionNames: {
-              _t: ['msgid']
+              _t: ['msgid'],
             },
-            fileName: './test/first.po'
-          }]
-        ]
+            fileName: './test/first.po',
+          }],
+        ],
       });
       assert(!!result);
 
       var content = fs.readFileSync('./test/first.po');
-      assert(!!content);
+      assert(content.indexOf('msgid "code"') !== -1);
+      assert(content.indexOf('msgid "hello"') !== -1);
     });
 
-    it('No file', function() {
+    it('No file created if no file name provided', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [
           [plugin, {
-            fileName: './test/test2.po'
-          }]
-        ]
+            fileName: './test/test2.po',
+          }],
+        ],
       });
-
       assert(!!result);
       assert(!fs.existsSync('./test/test2.po'));
     });
 
-    it('Should return a result', function() {
-      var result = babel.transform('dnpgettext("mydomain", "mycontext", ' +
-                                   '"msg", "plurial", 10)', {
+    it('Should return a result for dnpgettext', function() {
+      var result = babel.transform('dnpgettext("mydomain", "mycontext", "msg", "plurial", 10)', {
         plugins: [
           [plugin, {
-            fileName: './test/dnpgettext.po'
-          }]
-        ]
+            fileName: './test/dnpgettext.po',
+          }],
+        ],
       });
       assert(!!result);
-
       var content = fs.readFileSync('./test/dnpgettext.po');
-      assert(!!content);
+      assert(content.indexOf('msgid "msg"') !== -1);
+      assert(content.indexOf('msgid_plural "plurial"') !== -1);
     });
 
-    it('Should have comments', function() {
-      var result = babel.transform('// Translators: whatever happens\n' +
-                                   'let t = _t("code");', {
+    it('Should extract comments', function() {
+      var result = babel.transform('// Translators: whatever happens\n let t = _t("code");', {
         plugins: [
           [plugin, {
             functionNames: {
-              _t: ['msgid']
+              _t: ['msgid'],
             },
-            fileName: './test/comments.po'
-          }]
-        ]
+            fileName: './test/comments.po',
+          }],
+        ],
       });
       assert(!!result);
-
       var content = fs.readFileSync('./test/comments.po') + '';
       assert(content.match(/whatever happens/));
     });
 
+    it('Should return a result when expression is used as an argument', function() {
+      var result = babel.transform("let t = _t('some' + ' expression');", {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/defaultTranslate.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/defaultTranslate.po');
+      assert(content.indexOf('msgid "some expression"') !== -1);
+    });
+
+    it('Should stripIndent from template literals when configured', function() {
+      var result = babel.transform(`let t = _t(\`spread
+        over
+        multi
+        lines\`);`, {
+          plugins: [
+            [plugin, {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/multiline.po',
+              stripTemplateLiteralIndent: true,
+            }],
+          ],
+        });
+      assert(!!result);
+      var content = fs.readFileSync('./test/multiline.po');
+      assert(content.indexOf('spread over multi lines') !== -1);
+    });
+
+    it('Should not stripIndent from template literals by default', function() {
+      var result = babel.transform(`let t = _t(\`spread
+        over
+        multi
+        lines\`);`, {
+          plugins: [
+            [plugin, {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/stripIndent-not-configured.po',
+            }],
+          ],
+        });
+      assert(!!result);
+      var content = fs.readFileSync('./test/stripIndent-not-configured.po');
+      assert(content.indexOf('spread over multi lines') === -1);
+    });
   });
 });

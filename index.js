@@ -1,6 +1,4 @@
-'use strict';
-
-var sortObjectKeysByRef = require('./utils').sortObjectKeysByRef;
+var utils = require('./utils');
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
 
@@ -12,14 +10,14 @@ var DEFAULT_FUNCTION_NAMES = {
   pgettext: ['msgctxt', 'msgid'],
   dpgettext: ['domain', 'msgctxt', 'msgid'],
   npgettext: ['msgctxt', 'msgid', 'msgid_plural', 'count'],
-  dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'count']
+  dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'count'],
 };
 
 var DEFAULT_FILE_NAME = 'gettext.po';
 
 var DEFAULT_HEADERS = {
   'content-type': 'text/plain; charset=UTF-8',
-  'plural-forms': 'nplurals = 2; plural = (n !== 1);'
+  'plural-forms': 'nplurals = 2; plural = (n !== 1);',
 };
 
 
@@ -40,9 +38,9 @@ exports.default = function() {
   var data;
   var relocatedComments = {};
 
-  return {visitor: {
+  return { visitor: {
 
-    VariableDeclaration(nodePath, plugin) {
+    VariableDeclaration(nodePath) {
       var translatorComment = getTranslatorComment(nodePath.node);
       if (!translatorComment) {
         return;
@@ -70,7 +68,7 @@ exports.default = function() {
         data = {
           charset: 'UTF-8',
           headers: headers,
-          translations: {context: {}}
+          translations: { context: {} },
         };
 
         headers['plural-forms'] = headers['plural-forms']
@@ -82,7 +80,7 @@ exports.default = function() {
       var defaultContext = data.translations.context;
       var nplurals = /nplurals ?= ?(\d)/.exec(headers['plural-forms'])[1];
 
-      let callee = nodePath.node.callee;
+      const callee = nodePath.node.callee;
 
       if (functionNames.hasOwnProperty(callee.name) ||
           callee.property &&
@@ -91,14 +89,17 @@ exports.default = function() {
           || functionNames[callee.property.name];
         var translate = {};
 
-        var args = nodePath.node.arguments;
+        var args = nodePath.get('arguments');
         for (var i = 0, l = args.length; i < l; i++) {
           var name = functionName[i];
 
           if (name && name !== 'count' && name !== 'domain') {
-            var arg = args[i];
+            var arg = args[i].evaluate();
             var value = arg.value;
-            if (value) {
+            if (arg.confident && value) {
+              if (plugin.opts.stripTemplateLiteralIndent) {
+                value = utils.stripIndent(value);
+              }
               translate[name] = value;
             }
 
@@ -112,12 +113,12 @@ exports.default = function() {
         }
 
         var fn = this.file.opts.filename;
-        if (base && fn && fn.substr(0, base.length) == base) {
+        if (base && fn && fn.substr(0, base.length) === base) {
           fn = fn.substr(base.length);
         }
 
         translate.comments = {
-          reference: fn + ':' + nodePath.node.loc.start.line
+          reference: fn + ':' + nodePath.node.loc.start.line,
         };
 
         var translatorComment = getTranslatorComment(nodePath.node);
@@ -157,12 +158,11 @@ exports.default = function() {
 
         // Sort by file reference to make output idempotent for the same input.
         if (data.translations && data.translations.context) {
-          data.translations.context = sortObjectKeysByRef(data.translations.context);
+          data.translations.context = utils.sortObjectKeysByRef(data.translations.context);
         }
 
-        var output = gettextParser.po.compile(data);
-        fs.writeFileSync(fileName, output);
+        fs.writeFileSync(fileName, gettextParser.po.compile(data));
       }
-    }
-  }};
+    },
+  } };
 };

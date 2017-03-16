@@ -5,7 +5,7 @@
  */
 function sortObjectKeysByRef(unordered) {
   const ordered = {};
-  Object.keys(unordered).sort((a,b) => {
+  Object.keys(unordered).sort((a, b) => {
     const refA = unordered[a].comments.reference.toLowerCase();
     const refB = unordered[b].comments.reference.toLowerCase();
     if (refA < refB) {
@@ -21,6 +21,14 @@ function sortObjectKeysByRef(unordered) {
   return ordered;
 }
 
-module.exports = {
-  sortObjectKeysByRef: sortObjectKeysByRef,
+function stripIndent(str) {
+  if (str && str.replace && str.trim) {
+    return str.replace(/(?:\n(?:\s*))+/g, ' ').trim();
+  }
+  return str;
 }
+
+module.exports = {
+  stripIndent: stripIndent,
+  sortObjectKeysByRef: sortObjectKeysByRef,
+};
