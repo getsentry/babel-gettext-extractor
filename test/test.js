@@ -2,7 +2,7 @@ var assert = require('assert');
 var babel = require('babel-core');
 
 var fs = require('fs');
-var plugin = require('../index.js').default;
+var plugin = require('../index.js');
 
 
 describe('babel-gettext-plugin', function() {

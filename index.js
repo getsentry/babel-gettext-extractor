@@ -33,7 +33,7 @@ function getTranslatorComment(node) {
 }
 
 
-exports.default = function() {
+module.exports = function() {
   var currentFileName;
   var data;
   var relocatedComments = {};
