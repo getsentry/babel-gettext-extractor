@@ -103,6 +103,27 @@ describe('babel-gettext-extractor', function() {
       assert(content.indexOf('spread over multi lines') !== -1);
     });
 
+    it('Should stripIndent from template literals in plurals', function() {
+      var result = babel.transform(`let t = ngettext(\`multi
+        line\`, \`multi
+        line
+        plural\`, foo);`, {
+          plugins: [
+            [plugin, {
+              functionNames: {
+                ngettext: ['msgid', 'msgid_plural', 'count'],
+              },
+              fileName: './test/multiline-plural.po',
+              stripTemplateLiteralIndent: true,
+            }],
+          ],
+        });
+      assert(!!result);
+      var content = fs.readFileSync('./test/multiline-plural.po');
+      assert(content.indexOf('msgid "multi line') !== -1);
+      assert(content.indexOf('msgid_plural "multi line plural') !== -1);
+    });
+
     it('Should not stripIndent from template literals by default', function() {
       var result = babel.transform(`let t = _t(\`spread
         over
