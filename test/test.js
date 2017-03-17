@@ -5,7 +5,7 @@ var fs = require('fs');
 var plugin = require('../index.js');
 
 
-describe('babel-gettext-plugin', function() {
+describe('babel-gettext-extractor', function() {
   describe('#extract()', function() {
     it('Should return a result for simple code example', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
@@ -120,6 +120,23 @@ describe('babel-gettext-plugin', function() {
       assert(!!result);
       var content = fs.readFileSync('./test/stripIndent-not-configured.po');
       assert(content.indexOf('spread over multi lines') === -1);
+    });
+
+    it('Should return a result for JSX', function() {
+      var result = babel.transform('let jsx = <h1>{_t("title")}</h1>', {
+        presets: ['react'],
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/react.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/react.po');
+      assert(content.indexOf('msgid "title"') !== -1);
     });
   });
 });
