@@ -32,7 +32,7 @@ function getTranslatorComment(node) {
   return comments.length > 0 ? comments.join('\n') : null;
 }
 
-exports.default = function() {
+module.exports = function() {
   var currentFileName;
   var data;
   var relocatedComments = {};
