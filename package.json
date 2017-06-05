@@ -4,8 +4,9 @@
   "description": " Extract gettext string with babel",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha",
-    "lint": "./node_modules/.bin/eslint *.js **/*.js"
+    "test": "mocha",
+    "lint": "eslint *.js **/*.js",
+    "test-ci": "npm run test && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -30,7 +31,7 @@
   "devDependencies": {
     "babel": "^6.0.0",
     "babel-preset-react": "^6.5.0",
-    "eslint": "3.17.1",
+    "eslint": "^3.19.0",
     "eslint-config-airbnb": "14.1.0",
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "4.0.0",
