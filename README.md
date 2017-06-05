@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mozilla/babel-gettext-extractor.svg?branch=master)](https://travis-ci.org/mozilla/babel-gettext-extractor)
+
 *Please note: this is a fork of a fork and is not available as an npm package
 currently. If you wish to use this it's recommended you use a packaged
 upstream or maintain your own fork instead.*
