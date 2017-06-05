@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha",
     "lint": "eslint *.js **/*.js",
-    "test-ci": "npm run test && npm run lint"
+    "test-ci": "npm run clean && npm run test && npm run lint",
+    "clean": "rimraf 'test/*.po'"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.10.0",
-    "mocha": "^2.3.4"
+    "mocha": "^2.3.4",
+    "rimraf": "^2.6.1"
   }
 }
