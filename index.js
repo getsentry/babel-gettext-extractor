@@ -1,5 +1,4 @@
-'use strict';
-
+var utils = require('./utils');
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
 
@@ -11,15 +10,16 @@ var DEFAULT_FUNCTION_NAMES = {
   pgettext: ['msgctxt', 'msgid'],
   dpgettext: ['domain', 'msgctxt', 'msgid'],
   npgettext: ['msgctxt', 'msgid', 'msgid_plural', 'count'],
-  dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'count']
+  dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'count'],
 };
 
 var DEFAULT_FILE_NAME = 'gettext.po';
 
 var DEFAULT_HEADERS = {
   'content-type': 'text/plain; charset=UTF-8',
-  'plural-forms': 'nplurals = 2; plural = (n !== 1);'
+  'plural-forms': 'nplurals = 2; plural = (n !== 1);',
 };
+
 
 function getTranslatorComment(node) {
   var comments = [];
@@ -32,20 +32,20 @@ function getTranslatorComment(node) {
   return comments.length > 0 ? comments.join('\n') : null;
 }
 
-exports.default = function(_ref) {
+
+module.exports = function() {
   var currentFileName;
   var data;
-  var Plugin = _ref.Plugin;
   var relocatedComments = {};
 
-  return new Plugin('babel-plugin-example', {visitor: {
+  return { visitor: {
 
-    VariableDeclaration: function(node, parent, scope, config) {
-      var translatorComment = getTranslatorComment(node);
+    VariableDeclaration(nodePath) {
+      var translatorComment = getTranslatorComment(nodePath.node);
       if (!translatorComment) {
         return;
       }
-      node.declarations.forEach(function(declarator) {
+      nodePath.node.declarations.forEach(function(declarator) {
         var comment = getTranslatorComment(declarator);
         if (!comment) {
           var key = declarator.init.start + '|' + declarator.init.end;
@@ -54,14 +54,11 @@ exports.default = function(_ref) {
       });
     },
 
-    CallExpression: function(node, parent, scope, config) {
-      var gtCfg = config.opts && config.opts.extra
-        && config.opts.extra.gettext || {};
-
-      var functionNames = gtCfg.functionNames || DEFAULT_FUNCTION_NAMES;
-      var fileName = gtCfg.fileName || DEFAULT_FILE_NAME;
-      var headers = gtCfg.headers || DEFAULT_HEADERS;
-      var base = gtCfg.baseDirectory;
+    CallExpression(nodePath, plugin) {
+      var functionNames = plugin.opts && plugin.opts.functionNames || DEFAULT_FUNCTION_NAMES;
+      var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
+      var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
+      var base = plugin.opts && plugin.opts.baseDirectory;
       if (base) {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
@@ -71,7 +68,7 @@ exports.default = function(_ref) {
         data = {
           charset: 'UTF-8',
           headers: headers,
-          translations: {context: {}}
+          translations: { context: {} },
         };
 
         headers['plural-forms'] = headers['plural-forms']
@@ -83,21 +80,26 @@ exports.default = function(_ref) {
       var defaultContext = data.translations.context;
       var nplurals = /nplurals ?= ?(\d)/.exec(headers['plural-forms'])[1];
 
-      if (functionNames.hasOwnProperty(node.callee.name)
-          || node.callee.property &&
-          functionNames.hasOwnProperty(node.callee.property.name)) {
-        var functionName = functionNames[node.callee.name]
-          || functionNames[node.callee.property.name];
+      const callee = nodePath.node.callee;
+
+      if (functionNames.hasOwnProperty(callee.name) ||
+          callee.property &&
+          functionNames.hasOwnProperty(callee.property.name)) {
+        var functionName = functionNames[callee.name]
+          || functionNames[callee.property.name];
         var translate = {};
 
-        var args = node.arguments;
+        var args = nodePath.get('arguments');
         for (var i = 0, l = args.length; i < l; i++) {
           var name = functionName[i];
 
           if (name && name !== 'count' && name !== 'domain') {
-            var arg = args[i];
+            var arg = args[i].evaluate();
             var value = arg.value;
-            if (value) {
+            if (arg.confident && value) {
+              if (plugin.opts.stripTemplateLiteralIndent) {
+                value = utils.stripIndent(value);
+              }
               translate[name] = value;
             }
 
@@ -110,21 +112,21 @@ exports.default = function(_ref) {
           }
         }
 
-        var fn = config.log.filename;
-        if (base && fn && fn.substr(0, base.length) == base) {
+        var fn = this.file.opts.filename;
+        if (base && fn && fn.substr(0, base.length) === base) {
           fn = fn.substr(base.length);
         }
 
         translate.comments = {
-          reference: fn + ':' + node.loc.start.line
+          reference: fn + ':' + nodePath.node.loc.start.line,
         };
 
-        var translatorComment = getTranslatorComment(node);
+        var translatorComment = getTranslatorComment(nodePath.node);
         if (!translatorComment) {
-          translatorComment = getTranslatorComment(parent);
+          translatorComment = getTranslatorComment(nodePath.parentPath);
           if (!translatorComment) {
             translatorComment = relocatedComments[
-              node.start + '|' + node.end];
+              nodePath.node.start + '|' + nodePath.node.end];
           }
         }
 
@@ -139,11 +141,28 @@ exports.default = function(_ref) {
           context = data.translations[msgctxt];
         }
 
-        context[translate.msgid] = translate;
+        if (typeof context[translate.msgid] !== 'undefined') {
+          // If we already have this translation append the new file reference
+          // so we know about all the places it is used.
+          var newRef = translate.comments.reference;
+          var currentRef = context[translate.msgid].comments.reference;
+          var refs = currentRef.split('\n');
+          if (refs.indexOf(newRef) === -1) {
+            refs.push(newRef);
+            context[translate.msgid].comments.reference = refs.sort().join('\n');
+          }
+        } else if (typeof translate.msgid !== 'undefined') {
+          // Do not add translation if msgid is undefined.
+          context[translate.msgid] = translate;
+        }
 
-        var output = gettextParser.po.compile(data);
-        fs.writeFileSync(fileName, output);
+        // Sort by file reference to make output idempotent for the same input.
+        if (data.translations && data.translations.context) {
+          data.translations.context = utils.sortObjectKeysByRef(data.translations.context);
+        }
+
+        fs.writeFileSync(fileName, gettextParser.po.compile(data));
       }
-    }
-  }});
+    },
+  } };
 };

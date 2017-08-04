@@ -4,7 +4,10 @@
   "description": " Extract gettext string with babel",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha"
+    "test": "mocha",
+    "lint": "eslint *.js **/*.js",
+    "test-ci": "npm run clean && npm run test && npm run lint",
+    "clean": "rimraf 'test/*.po'"
   },
   "repository": {
     "type": "git",
@@ -23,11 +26,18 @@
   },
   "homepage": "https://github.com/getsentry/babel-gettext-extractor",
   "dependencies": {
-    "babel-core": "^5.8.23",
-    "gettext-parser": "^1.1.1"
+    "babel-core": "^6.0.0",
+    "gettext-parser": "^1.1.2"
   },
   "devDependencies": {
-    "babel": "^5.8.23",
-    "mocha": "^2.3.4"
+    "babel": "^6.0.0",
+    "babel-preset-react": "^6.5.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "14.1.0",
+    "eslint-plugin-import": "2.2.0",
+    "eslint-plugin-jsx-a11y": "4.0.0",
+    "eslint-plugin-react": "6.10.0",
+    "mocha": "^2.3.4",
+    "rimraf": "^2.6.1"
   }
 }
