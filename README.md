@@ -25,14 +25,14 @@ Options
 
 You can pass otions as extra in babel options :
 ```js
-plugins: [
-  ['babel-gettext-extractor', {
+extra: {
+  gettext: {
     headers: <Object>,
     functionNames: <Object>,
     fileName: <String>,
     baseDirectory: <String>
-  }]
-]
+  }
+}
 ```
 
 ### headers ###
