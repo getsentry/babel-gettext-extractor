@@ -41,6 +41,7 @@ Options
     "functionNames": <Object>,
     "fileName": <String>,
     "baseDirectory": <String>,
+    "stripWorkingDirectory": <Boolean>,
     "stripTemplateLiteralIndent": <Boolean>
   }]
 ]
@@ -77,6 +78,11 @@ The filename where the end result is placed.
 
 If provided, then file names are chopped off in relation to this base path
 if filenames start with that path.
+
+### stripWorkingDirectory ###
+
+If `true` then file names are chopped off in relation to the current working
+directory. This provides compatibility with some build environments like React Native.
 
 ### stripTemplateLiteralIndent ###
 

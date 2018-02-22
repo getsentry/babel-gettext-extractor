@@ -58,6 +58,7 @@ module.exports = function() {
       var functionNames = plugin.opts && plugin.opts.functionNames || DEFAULT_FUNCTION_NAMES;
       var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
       var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
+      var stripWorkingDirectory = plugin.opts.stripWorkingDirectory;
       var base = plugin.opts && plugin.opts.baseDirectory;
       if (base) {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
@@ -113,6 +114,10 @@ module.exports = function() {
         }
 
         var fn = this.file.opts.filename;
+        var cwd = stripWorkingDirectory && process.cwd() + '/';
+        if (cwd && fn && fn.substr(0, cwd.length) === cwd) {
+          fn = fn.substr(cwd.length);
+        }
         if (base && fn && fn.substr(0, base.length) === base) {
           fn = fn.substr(base.length);
         }
