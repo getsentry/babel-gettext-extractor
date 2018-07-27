@@ -63,6 +63,14 @@ module.exports = function() {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
 
+      if (typeof fileName === 'function') {
+        fileName = fileName(this.file);
+      }
+
+      if (!fileName) {
+        return;
+      }
+
       if (fileName !== currentFileName) {
         currentFileName = fileName;
         data = {

@@ -4,7 +4,6 @@ var babel = require('babel-core');
 var fs = require('fs');
 var plugin = require('../index.js');
 
-
 describe('babel-gettext-extractor', function() {
   describe('#extract()', function() {
     it('Should return a result for simple code example', function() {
@@ -158,6 +157,24 @@ describe('babel-gettext-extractor', function() {
       assert(!!result);
       var content = fs.readFileSync('./test/react.po');
       assert(content.indexOf('msgid "title"') !== -1);
+    });
+
+    it('Should decide on a filename dynamically', function() {
+      const code = '_t("Dynamic Filenames")';
+
+      var result = babel.transform(code, {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: (file) => 'test/' + file.opts.sourceFileName + '-dynamic-filename.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/unknown-dynamic-filename.po');
+      assert(content.indexOf('msgid "Dynamic Filenames"') !== -1);
     });
   });
 });
