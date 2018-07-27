@@ -176,5 +176,21 @@ describe('babel-gettext-extractor', function() {
       var content = fs.readFileSync('./test/unknown-dynamic-filename.po');
       assert(content.indexOf('msgid "Dynamic Filenames"') !== -1);
     });
+
+    it('Should skip a file if the dynamic filename is false', function() {
+      const code = '_t("Dynamic Filenames")';
+
+      var result = babel.transform(code, {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: () => false,
+          }],
+        ],
+      });
+      assert(!!result);
+    });
   });
 });
