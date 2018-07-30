@@ -73,11 +73,20 @@ module.exports = function() {
 
       if (fileName !== currentFileName) {
         currentFileName = fileName;
-        data = {
-          charset: 'UTF-8',
-          headers: headers,
-          translations: { context: {} },
-        };
+        try {
+            const fileContents = fs.readFileSync(fileName, 'utf8');
+            data = gettextParser.mo.parse(fileContents);
+            data.headers = {
+                ...(data.headers || {}),
+                ...headers,
+            }
+        } catch (e) {
+            data = {
+                charset: 'UTF-8',
+                headers: headers,
+                translations: { context: {} },
+            };
+        }
 
         headers['plural-forms'] = headers['plural-forms']
           || DEFAULT_HEADERS['plural-forms'];
