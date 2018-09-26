@@ -1,9 +1,12 @@
 var assert = require('assert');
 var babel = require('babel-core');
+var path = require('path');
+var rimraf = require('rimraf');
 
 var fs = require('fs');
 var plugin = require('../index.js');
 
+afterEach((done) => rimraf(path.join(__dirname, '*.po'), done));
 
 describe('babel-gettext-extractor', function() {
   describe('#extract()', function() {
@@ -158,6 +161,45 @@ describe('babel-gettext-extractor', function() {
       assert(!!result);
       var content = fs.readFileSync('./test/react.po');
       assert(content.indexOf('msgid "title"') !== -1);
+    });
+
+    it('Should use a universal slash (windows to *nix)', () => {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        filename: 'c:\\Users\\TheUser\\Project\\file.js',
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/first.po',
+            baseDirectory: 'c:\\Users\\TheUser\\Project\\',
+            universalSlash: '/',
+          }],
+        ],
+      });
+      assert(!!result);
+
+      var content = fs.readFileSync('./test/first.po');
+      assert(content.indexOf('Project/file.js') !== -1);
+    });
+    it('Should use a universal slash (*nix to windows)', () => {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        filename: '/home/user/projects/code/file.js',
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/slash-windows.po',
+            baseDirectory: '/home/user/projects/',
+            universalSlash: '\\',
+          }],
+        ],
+      });
+      assert(!!result);
+
+      var content = fs.readFileSync('./test/slash-windows.po', 'utf8');
+      assert(content.indexOf('code\\file.js') !== -1);
     });
   });
 });

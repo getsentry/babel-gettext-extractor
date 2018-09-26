@@ -59,6 +59,8 @@ module.exports = function() {
       var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
       var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
       var base = plugin.opts && plugin.opts.baseDirectory;
+      var universalSlash = plugin.opts && plugin.opts.universalSlash;
+
       if (base) {
         base = base.match(/^(.*?)\/*$/)[1] + '/';
       }
@@ -115,6 +117,12 @@ module.exports = function() {
         var fn = this.file.opts.filename;
         if (base && fn && fn.substr(0, base.length) === base) {
           fn = fn.substr(base.length);
+        }
+
+        if (universalSlash === '/') {
+          fn = fn.replace(/\\/g, universalSlash)
+        } else if (universalSlash === '\\') {
+          fn = fn.replace(/\//g, universalSlash)
         }
 
         translate.comments = {
