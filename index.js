@@ -1,6 +1,7 @@
 var utils = require('./utils');
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
+var path = require('path');
 
 var DEFAULT_FUNCTION_NAMES = {
   gettext: ['msgid'],
@@ -58,9 +59,10 @@ module.exports = function() {
       var functionNames = plugin.opts && plugin.opts.functionNames || DEFAULT_FUNCTION_NAMES;
       var fileName = plugin.opts && plugin.opts.fileName || DEFAULT_FILE_NAME;
       var headers = plugin.opts && plugin.opts.headers || DEFAULT_HEADERS;
-      var base = plugin.opts && plugin.opts.baseDirectory;
+      var base = plugin.opts && plugin.opts.baseDirectory && plugin.opts.baseDirectory.replace(/\\/g, '/');
+
       if (base) {
-        base = base.match(/^(.*?)\/*$/)[1] + '/';
+		base = base.match(/^(.*?)[\//]*$/)[1] + path.sep;
       }
 
       if (fileName !== currentFileName) {
