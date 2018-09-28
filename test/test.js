@@ -201,5 +201,39 @@ describe('babel-gettext-extractor', function() {
       var content = fs.readFileSync('./test/slash-windows.po', 'utf8');
       assert(content.indexOf('code\\file.js') !== -1);
     });
+    it('should strip the base directory', () => {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        filename: path.sep + ['this', 'is', 'the', 'path', 'file.js'].join(path.sep),
+        plugins: [
+          [plugin, {
+            baseDirectory: path.sep + ['this', 'is', 'the', 'path'].join(path.sep),
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/strip-base-1.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/strip-base-1.po');
+      assert(content.indexOf('#: file.js') !== -1);
+    });
+    it('should strip the base if it ends in slash', () => {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        filename: path.sep + ['this', 'is', 'the', 'path', 'file.js'].join(path.sep),
+        plugins: [
+          [plugin, {
+            baseDirectory: path.sep + ['this', 'is', 'the', 'path'].join(path.sep) + path.sep,
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/strip-base-2.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/strip-base-2.po');
+      assert(content.indexOf('#: file.js') !== -1);
+    });
   });
 });
