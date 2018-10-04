@@ -73,14 +73,15 @@ module.exports = function() {
 
       if (fileName !== currentFileName) {
         currentFileName = fileName;
-        try {
+        if (fs.existsSync(fileName)) {
           const fileContents = fs.readFileSync(fileName, 'utf8');
-          data = gettextParser.mo.parse(fileContents);
+          data = gettextParser.po.parse(fileContents);
           data.headers = {
             ...(data.headers || {}),
             ...headers,
           };
-        } catch (e) {
+          data.translations.context = data.translations.context || {};
+        } else {
           data = {
             charset: 'UTF-8',
             headers: headers,
