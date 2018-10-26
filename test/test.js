@@ -25,6 +25,24 @@ describe('babel-gettext-extractor', function() {
       assert(content.indexOf('msgid "hello"') !== -1);
     });
 
+    it('Should create subfolder if doesn\'t exists', function() {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/some/folder/structure/test.po',
+          }],
+        ],
+      });
+      assert(!!result);
+
+      var content = fs.readFileSync('./test/some/folder/structure/test.po');
+      assert(content.indexOf('msgid "code"') !== -1);
+      assert(content.indexOf('msgid "hello"') !== -1);
+    });
+
     it('No file created if no file name provided', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [

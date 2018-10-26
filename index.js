@@ -1,6 +1,7 @@
 var utils = require('./utils');
 var gettextParser = require('gettext-parser');
 var fs = require('fs');
+var path = require('path');
 
 var DEFAULT_FUNCTION_NAMES = {
   gettext: ['msgid'],
@@ -30,6 +31,15 @@ function getTranslatorComment(node) {
     }
   });
   return comments.length > 0 ? comments.join('\n') : null;
+}
+
+function ensureDirectoryExistence(filePath) {
+  var dirname = path.dirname(filePath);
+  if (fs.existsSync(dirname)) {
+    return true;
+  }
+  ensureDirectoryExistence(dirname);
+  fs.mkdirSync(dirname);
 }
 
 
@@ -160,7 +170,7 @@ module.exports = function() {
         if (data.translations && data.translations.context) {
           data.translations.context = utils.sortObjectKeysByRef(data.translations.context);
         }
-
+        ensureDirectoryExistence(fileName);
         fs.writeFileSync(fileName, gettextParser.po.compile(data));
       }
     },
