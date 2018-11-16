@@ -1,5 +1,5 @@
 var assert = require('assert');
-var babel = require('babel-core');
+var babel = require('@babel/core');
 
 var fs = require('fs');
 var plugin = require('../index.js');
@@ -145,7 +145,7 @@ describe('babel-gettext-extractor', function() {
 
     it('Should return a result for JSX', function() {
       var result = babel.transform('let jsx = <h1>{_t("title")}</h1>', {
-        presets: ['react'],
+        presets: ['@babel/react'],
         plugins: [
           [plugin, {
             functionNames: {
