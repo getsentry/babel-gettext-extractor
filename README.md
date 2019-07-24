@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/mozilla/babel-gettext-extractor.svg?branch=master)](https://travis-ci.org/mozilla/babel-gettext-extractor)
+[![npm version](https://img.shields.io/npm/v/babel-gettext-extractor.svg)](https://www.npmjs.com/package/babel-gettext-extractor)
 
 # babel-gettext-extractor
 
