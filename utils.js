@@ -5,19 +5,21 @@
  */
 function sortObjectKeysByRef(unordered) {
   const ordered = {};
-  Object.keys(unordered).sort((a, b) => {
-    const refA = unordered[a].comments.reference.toLowerCase();
-    const refB = unordered[b].comments.reference.toLowerCase();
-    if (refA < refB) {
-      return -1;
-    }
-    if (refA > refB) {
-      return 1;
-    }
-    return 0;
-  }).forEach(function(key) {
-    ordered[key] = unordered[key];
-  });
+  Object.keys(unordered)
+    .sort((a, b) => {
+      const refA = unordered[a].comments.reference.toLowerCase();
+      const refB = unordered[b].comments.reference.toLowerCase();
+      if (refA < refB) {
+        return -1;
+      }
+      if (refA > refB) {
+        return 1;
+      }
+      return 0;
+    })
+    .forEach(function(key) {
+      ordered[key] = unordered[key];
+    });
   return ordered;
 }
 
