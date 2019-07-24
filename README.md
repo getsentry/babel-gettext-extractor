@@ -6,7 +6,7 @@ Extract gettext string with babel support syntax JSX, ES6, ... It is based on
 node-gettext.  This is a fork of the npm module `babel-gettext-plugin` which
 adds support for references and runs on earlier versions of node.
 
-Supports babel 6.
+Supports babel 7.
 
 Install
 ========
