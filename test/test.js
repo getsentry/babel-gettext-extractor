@@ -9,12 +9,15 @@ describe('babel-gettext-extractor', function() {
     it('Should return a result for simple code example', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/first.po',
             },
-            fileName: './test/first.po',
-          }],
+          ],
         ],
       });
       assert(!!result);
@@ -24,15 +27,18 @@ describe('babel-gettext-extractor', function() {
       assert(content.indexOf('msgid "hello"') !== -1);
     });
 
-    it('Should create subfolder if doesn\'t exists', function() {
+    it("Should create subfolder if doesn't exists", function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/some/folder/structure/test.po',
             },
-            fileName: './test/some/folder/structure/test.po',
-          }],
+          ],
         ],
       });
       assert(!!result);
@@ -45,9 +51,12 @@ describe('babel-gettext-extractor', function() {
     it('No file created if no file name provided', function() {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         plugins: [
-          [plugin, {
-            fileName: './test/test2.po',
-          }],
+          [
+            plugin,
+            {
+              fileName: './test/test2.po',
+            },
+          ],
         ],
       });
       assert(!!result);
@@ -55,13 +64,19 @@ describe('babel-gettext-extractor', function() {
     });
 
     it('Should return a result for dnpgettext', function() {
-      var result = babel.transform('dnpgettext("mydomain", "mycontext", "msg", "plurial", 10)', {
-        plugins: [
-          [plugin, {
-            fileName: './test/dnpgettext.po',
-          }],
-        ],
-      });
+      var result = babel.transform(
+        'dnpgettext("mydomain", "mycontext", "msg", "plurial", 10)',
+        {
+          plugins: [
+            [
+              plugin,
+              {
+                fileName: './test/dnpgettext.po',
+              },
+            ],
+          ],
+        }
+      );
       assert(!!result);
       var content = fs.readFileSync('./test/dnpgettext.po');
       assert(content.indexOf('msgid "msg"') !== -1);
@@ -69,16 +84,22 @@ describe('babel-gettext-extractor', function() {
     });
 
     it('Should extract comments', function() {
-      var result = babel.transform('// Translators: whatever happens\n let t = _t("code");', {
-        plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
-            },
-            fileName: './test/comments.po',
-          }],
-        ],
-      });
+      var result = babel.transform(
+        '// Translators: whatever happens\n let t = _t("code");',
+        {
+          plugins: [
+            [
+              plugin,
+              {
+                functionNames: {
+                  _t: ['msgid'],
+                },
+                fileName: './test/comments.po',
+              },
+            ],
+          ],
+        }
+      );
       assert(!!result);
       var content = fs.readFileSync('./test/comments.po') + '';
       assert(content.match(/whatever happens/));
@@ -87,12 +108,15 @@ describe('babel-gettext-extractor', function() {
     it('Should return a result when expression is used as an argument', function() {
       var result = babel.transform("let t = _t('some' + ' expression');", {
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/defaultTranslate.po',
             },
-            fileName: './test/defaultTranslate.po',
-          }],
+          ],
         ],
       });
       assert(!!result);
@@ -101,40 +125,52 @@ describe('babel-gettext-extractor', function() {
     });
 
     it('Should stripIndent from template literals when configured', function() {
-      var result = babel.transform(`let t = _t(\`spread
+      var result = babel.transform(
+        `let t = _t(\`spread
         over
         multi
-        lines\`);`, {
+        lines\`);`,
+        {
           plugins: [
-            [plugin, {
-              functionNames: {
-                _t: ['msgid'],
+            [
+              plugin,
+              {
+                functionNames: {
+                  _t: ['msgid'],
+                },
+                fileName: './test/multiline.po',
+                stripTemplateLiteralIndent: true,
               },
-              fileName: './test/multiline.po',
-              stripTemplateLiteralIndent: true,
-            }],
+            ],
           ],
-        });
+        }
+      );
       assert(!!result);
       var content = fs.readFileSync('./test/multiline.po');
       assert(content.indexOf('spread over multi lines') !== -1);
     });
 
     it('Should stripIndent from template literals in plurals', function() {
-      var result = babel.transform(`let t = ngettext(\`multi
+      var result = babel.transform(
+        `let t = ngettext(\`multi
         line\`, \`multi
         line
-        plural\`, foo);`, {
+        plural\`, foo);`,
+        {
           plugins: [
-            [plugin, {
-              functionNames: {
-                ngettext: ['msgid', 'msgid_plural', 'count'],
+            [
+              plugin,
+              {
+                functionNames: {
+                  ngettext: ['msgid', 'msgid_plural', 'count'],
+                },
+                fileName: './test/multiline-plural.po',
+                stripTemplateLiteralIndent: true,
               },
-              fileName: './test/multiline-plural.po',
-              stripTemplateLiteralIndent: true,
-            }],
+            ],
           ],
-        });
+        }
+      );
       assert(!!result);
       var content = fs.readFileSync('./test/multiline-plural.po');
       assert(content.indexOf('msgid "multi line') !== -1);
@@ -142,19 +178,25 @@ describe('babel-gettext-extractor', function() {
     });
 
     it('Should not stripIndent from template literals by default', function() {
-      var result = babel.transform(`let t = _t(\`spread
+      var result = babel.transform(
+        `let t = _t(\`spread
         over
         multi
-        lines\`);`, {
+        lines\`);`,
+        {
           plugins: [
-            [plugin, {
-              functionNames: {
-                _t: ['msgid'],
+            [
+              plugin,
+              {
+                functionNames: {
+                  _t: ['msgid'],
+                },
+                fileName: './test/stripIndent-not-configured.po',
               },
-              fileName: './test/stripIndent-not-configured.po',
-            }],
+            ],
           ],
-        });
+        }
+      );
       assert(!!result);
       var content = fs.readFileSync('./test/stripIndent-not-configured.po');
       assert(content.indexOf('spread over multi lines') === -1);
@@ -164,12 +206,15 @@ describe('babel-gettext-extractor', function() {
       var result = babel.transform('let jsx = <h1>{_t("title")}</h1>', {
         presets: ['@babel/react'],
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: './test/react.po',
             },
-            fileName: './test/react.po',
-          }],
+          ],
         ],
       });
       assert(!!result);
@@ -182,12 +227,18 @@ describe('babel-gettext-extractor', function() {
 
       var result = babel.transform(code, {
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: file =>
+                'test/' +
+                file.opts.generatorOpts.sourceFileName +
+                '-dynamic-filename.po',
             },
-            fileName: (file) => 'test/' + file.opts.generatorOpts.sourceFileName + '-dynamic-filename.po',
-          }],
+          ],
         ],
       });
       assert(!!result);
@@ -200,12 +251,15 @@ describe('babel-gettext-extractor', function() {
 
       var result = babel.transform(code, {
         plugins: [
-          [plugin, {
-            functionNames: {
-              _t: ['msgid'],
+          [
+            plugin,
+            {
+              functionNames: {
+                _t: ['msgid'],
+              },
+              fileName: () => false,
             },
-            fileName: () => false,
-          }],
+          ],
         ],
       });
       assert(!!result);
