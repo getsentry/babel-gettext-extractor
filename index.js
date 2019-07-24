@@ -86,10 +86,7 @@ module.exports = function() {
         if (fs.existsSync(fileName)) {
           const fileContents = fs.readFileSync(fileName, 'utf8');
           data = gettextParser.po.parse(fileContents);
-          data.headers = {
-            ...(data.headers || {}),
-            ...headers,
-          };
+          data.headers = Object.assign({}, data.headers || {}, headers);
           data.translations.context = data.translations.context || {};
         } else {
           data = {
