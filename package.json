@@ -32,7 +32,8 @@
   },
   "lint-staged": {
     "*.js": [
-      "eslint --fix"
+      "eslint --fix",
+      "npm run test"
     ]
   },
   "dependencies": {
