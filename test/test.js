@@ -1,5 +1,5 @@
 var assert = require('assert');
-var babel = require('babel-core');
+var babel = require('@babel/core');
 var path = require('path');
 var rimraf = require('rimraf');
 
@@ -24,6 +24,24 @@ describe('babel-gettext-extractor', function() {
       assert(!!result);
 
       var content = fs.readFileSync('./test/first.po');
+      assert(content.indexOf('msgid "code"') !== -1);
+      assert(content.indexOf('msgid "hello"') !== -1);
+    });
+
+    it('Should create subfolder if doesn\'t exists', function() {
+      var result = babel.transform('let t = _t("code");_t("hello");', {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: './test/some/folder/structure/test.po',
+          }],
+        ],
+      });
+      assert(!!result);
+
+      var content = fs.readFileSync('./test/some/folder/structure/test.po');
       assert(content.indexOf('msgid "code"') !== -1);
       assert(content.indexOf('msgid "hello"') !== -1);
     });
@@ -148,7 +166,7 @@ describe('babel-gettext-extractor', function() {
 
     it('Should return a result for JSX', function() {
       var result = babel.transform('let jsx = <h1>{_t("title")}</h1>', {
-        presets: ['react'],
+        presets: ['@babel/react'],
         plugins: [
           [plugin, {
             functionNames: {
@@ -182,6 +200,7 @@ describe('babel-gettext-extractor', function() {
       var content = fs.readFileSync('./test/first.po');
       assert(content.indexOf('Project/file.js') !== -1);
     });
+    
     it('Should use a universal slash (*nix to windows)', () => {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         filename: '/home/user/projects/code/file.js',
@@ -201,6 +220,7 @@ describe('babel-gettext-extractor', function() {
       var content = fs.readFileSync('./test/slash-windows.po', 'utf8');
       assert(content.indexOf('code\\file.js') !== -1);
     });
+    
     it('should strip the base directory', () => {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         filename: path.sep + ['this', 'is', 'the', 'path', 'file.js'].join(path.sep),
@@ -218,6 +238,7 @@ describe('babel-gettext-extractor', function() {
       var content = fs.readFileSync('./test/strip-base-1.po');
       assert(content.indexOf('#: file.js') !== -1);
     });
+    
     it('should strip the base if it ends in slash', () => {
       var result = babel.transform('let t = _t("code");_t("hello");', {
         filename: path.sep + ['this', 'is', 'the', 'path', 'file.js'].join(path.sep),
@@ -234,6 +255,40 @@ describe('babel-gettext-extractor', function() {
       assert(!!result);
       var content = fs.readFileSync('./test/strip-base-2.po');
       assert(content.indexOf('#: file.js') !== -1);
+    });
+
+    it('Should decide on a filename dynamically', function() {
+      const code = '_t("Dynamic Filenames")';
+
+      var result = babel.transform(code, {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: (file) => 'test/' + file.opts.sourceFileName + '-dynamic-filename.po',
+          }],
+        ],
+      });
+      assert(!!result);
+      var content = fs.readFileSync('./test/unknown-dynamic-filename.po');
+      assert(content.indexOf('msgid "Dynamic Filenames"') !== -1);
+    });
+
+    it('Should skip a file if the dynamic filename is false', function() {
+      const code = '_t("Dynamic Filenames")';
+
+      var result = babel.transform(code, {
+        plugins: [
+          [plugin, {
+            functionNames: {
+              _t: ['msgid'],
+            },
+            fileName: () => false,
+          }],
+        ],
+      });
+      assert(!!result);
     });
   });
 });

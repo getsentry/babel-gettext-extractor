@@ -1,6 +1,6 @@
 {
   "name": "babel-gettext-extractor",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": " Extract gettext string with babel",
   "main": "index.js",
   "scripts": {
@@ -26,12 +26,11 @@
   },
   "homepage": "https://github.com/getsentry/babel-gettext-extractor",
   "dependencies": {
-    "babel-core": "^6.0.0",
+    "@babel/core": "^7.0.0",
     "gettext-parser": "^1.1.2"
   },
   "devDependencies": {
-    "babel": "^6.0.0",
-    "babel-preset-react": "^6.5.0",
+    "@babel/preset-react": "^7.0.0",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "14.1.0",
     "eslint-plugin-import": "2.2.0",

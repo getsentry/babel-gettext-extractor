@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/mozilla/babel-gettext-extractor.svg?branch=master)](https://travis-ci.org/mozilla/babel-gettext-extractor)
+[![npm version](https://img.shields.io/npm/v/babel-gettext-extractor.svg)](https://www.npmjs.com/package/babel-gettext-extractor)
 
 # babel-gettext-extractor
 
@@ -6,7 +7,7 @@ Extract gettext string with babel support syntax JSX, ES6, ... It is based on
 node-gettext.  This is a fork of the npm module `babel-gettext-plugin` which
 adds support for references and runs on earlier versions of node.
 
-Supports babel 6.
+Supports babel 7.
 
 Install
 ========
@@ -39,7 +40,7 @@ Options
   [ "babel-gettext-extractor", {
     "headers": <Object>,
     "functionNames": <Object>,
-    "fileName": <String>,
+    "fileName": <String|Function>,
     "baseDirectory": <String>,
     "stripTemplateLiteralIndent": <Boolean>
   }]
@@ -71,7 +72,28 @@ functionNames: {
 
 ### fileName ###
 
-The filename where the end result is placed.
+The filename where the end result is placed. If you supply a function, it will receive the current file babel is working
+on and you can return the full path to where you want to save your translation template for this particular file.
+
+example:
+```javascript
+[
+    require("babel-gettext-extractor"),
+    {
+        fileName: (file) => {
+            const sourceFile = file.opts.sourceFileName;
+            if (/^node_modules\//.test(sourceFile)) {
+                return false;
+            }
+            return sourceFile
+                .split(/[\/\\.]/)
+                .filter(name => !['src', 'packages', 'js'].includes(name))
+                .slice(0, 2)
+                .join('-') + '-template.pot';
+        },
+    },
+]
+```
 
 ### baseDirectory ###
 

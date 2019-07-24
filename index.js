@@ -33,6 +33,15 @@ function getTranslatorComment(node) {
   return comments.length > 0 ? comments.join('\n') : null;
 }
 
+function ensureDirectoryExistence(filePath) {
+  var dirname = path.dirname(filePath);
+  if (fs.existsSync(dirname)) {
+    return true;
+  }
+  ensureDirectoryExistence(dirname);
+  fs.mkdirSync(dirname);
+}
+
 
 module.exports = function() {
   var currentFileName;
@@ -66,13 +75,31 @@ module.exports = function() {
 		base = base.match(/^(.*?)[\//]*$/)[1] + path.sep;
       }
 
+      if (typeof fileName === 'function') {
+        fileName = fileName(this.file);
+      }
+
+      if (!fileName) {
+        return;
+      }
+
       if (fileName !== currentFileName) {
         currentFileName = fileName;
-        data = {
-          charset: 'UTF-8',
-          headers: headers,
-          translations: { context: {} },
-        };
+        if (fs.existsSync(fileName)) {
+          const fileContents = fs.readFileSync(fileName, 'utf8');
+          data = gettextParser.po.parse(fileContents);
+          data.headers = {
+            ...(data.headers || {}),
+            ...headers,
+          };
+          data.translations.context = data.translations.context || {};
+        } else {
+          data = {
+            charset: 'UTF-8',
+            headers: headers,
+            translations: { context: {} },
+          };
+        }
 
         headers['plural-forms'] = headers['plural-forms']
           || DEFAULT_HEADERS['plural-forms'];
@@ -169,7 +196,7 @@ module.exports = function() {
         if (data.translations && data.translations.context) {
           data.translations.context = utils.sortObjectKeysByRef(data.translations.context);
         }
-
+        ensureDirectoryExistence(fileName);
         fs.writeFileSync(fileName, gettextParser.po.compile(data));
       }
     },
