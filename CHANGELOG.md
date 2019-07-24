@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- None
+- feat: Drop support for node 6
+- build: Add prettier + precommit hooks
 
 ## 4.1.2
 - feat: Update `gettext-parser` to 1.4.0 (#19)
