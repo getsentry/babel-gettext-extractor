@@ -27,7 +27,7 @@
   "homepage": "https://github.com/getsentry/babel-gettext-extractor",
   "dependencies": {
     "@babel/core": "^7.0.0",
-    "gettext-parser": "^1.1.2"
+    "gettext-parser": "1.4.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.0.0",
