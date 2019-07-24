@@ -36,8 +36,9 @@ function getTranslatorComment(node) {
 function ensureDirectoryExistence(filePath) {
   var dirname = path.dirname(filePath);
   if (fs.existsSync(dirname)) {
-    return true;
+    return;
   }
+
   ensureDirectoryExistence(dirname);
   fs.mkdirSync(dirname);
 }
