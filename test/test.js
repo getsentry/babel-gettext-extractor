@@ -186,7 +186,7 @@ describe('babel-gettext-extractor', function() {
             functionNames: {
               _t: ['msgid'],
             },
-            fileName: (file) => 'test/' + file.opts.sourceFileName + '-dynamic-filename.po',
+            fileName: (file) => 'test/' + file.opts.generatorOpts.sourceFileName + '-dynamic-filename.po'
           }],
         ],
       });
