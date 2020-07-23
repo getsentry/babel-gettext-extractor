@@ -7,7 +7,9 @@
     "test": "mocha",
     "lint": "eslint *.js **/*.js",
     "test-ci": "npm run clean && npm run test && npm run lint",
-    "clean": "rimraf 'test/*.po'"
+    "clean": "rimraf 'test/*.po'",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -27,7 +29,8 @@
   "homepage": "https://github.com/getsentry/babel-gettext-extractor",
   "dependencies": {
     "@babel/core": "^7.0.0",
-    "gettext-parser": "1.4.0"
+    "gettext-parser": "1.4.0",
+    "snyk": "^1.317.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.0.0",
@@ -38,5 +41,6 @@
     "eslint-plugin-react": "6.10.0",
     "mocha": "^2.3.4",
     "rimraf": "^2.6.1"
-  }
+  },
+  "snyk": true
 }
